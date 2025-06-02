@@ -58,15 +58,13 @@ class PostListView(LoginRequiredMixin, ListView):
         # Get all users who are currently logged in
         active_users = User.objects.filter(id__in=logged_in_user_ids).order_by('-last_login')[:10]  # Top 10 logged in users
         
-        # Mark all as online and add post count
+        # Mark all as online and add total post count
         for user in active_users:
             user.is_online = True
-            # Count posts for each type
-            user.post_count = {
-                'normal': NormalPost.objects.filter(author=user).count(),
-                'announcement': AnnouncementPost.objects.filter(author=user).count(),
-                'community': CommunityPost.objects.filter(author=user).count()
-            }
+            # Count total posts
+            user.post_count = NormalPost.objects.filter(author=user).count() + \
+                           AnnouncementPost.objects.filter(author=user).count() + \
+                           CommunityPost.objects.filter(author=user).count()
         
         context['active_users'] = active_users
         
