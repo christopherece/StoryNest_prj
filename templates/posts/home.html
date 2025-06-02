@@ -41,15 +41,15 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postMenu{{ post.id }}">
-                                <li><a class="dropdown-item" href="{% url 'post-update' post.id %}"><i class="fas fa-edit me-2"></i> Edit Post</a></li>
+                                <li><a class="dropdown-item" href="{% url post.get_update_url pk=post.id post_type=post.get_post_type %}"><i class="fas fa-edit me-2"></i> Edit Post</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'post-delete' post.id %}"><i class="fas fa-trash me-2"></i> Delete Post</a></li>
+                                <li><a class="dropdown-item text-danger" href="{% url post.get_delete_url pk=post.id post_type=post.get_post_type %}"><i class="fas fa-trash me-2"></i> Delete Post</a></li>
                             </ul>
                         </div>
                         {% endif %}
                     </div>
                     <div class="post-content">
-                        <h3><a href="{% url 'post-detail' post.id %}" class="text-decoration-none">{{ post.title }}</a></h3>
+                        <h3><a href="{% url post.get_detail_url pk=post.id post_type=post.get_post_type %}" class="text-decoration-none">{{ post.title }}</a></h3>
                         {% if post.image %}
                         <div class="post-media mb-3">
                             {% with ext=post.image.url|lower %}
@@ -73,7 +73,7 @@
                         <p>{{ post.content|truncatewords:50 }}</p>
                     </div>
                     <div class="post-actions">
-                        <button class="btn-like {% if user in post.likes.all %}active{% endif %}" data-url="{% url 'like-post' post.id %}">
+                        <button class="btn-like {% if user in post.likes.all %}active{% endif %}" data-url="{% url 'like-post' pk=post.id post_type=post.get_post_type %}">
                             {% if user in post.likes.all %}
                                 <i class="fas fa-heart"></i>
                             {% else %}
@@ -81,7 +81,7 @@
                             {% endif %}
                             {{ post.get_like_count }}
                         </button>
-                        <a href="{% url 'post-detail' post.id %}" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url post.get_detail_url pk=post.id post_type=post.get_post_type %}" class="btn btn-sm btn-outline-primary">
                             <i class="far fa-comment"></i> {{ post.comments.count }} Comments
                         </a>
                     </div>
@@ -126,7 +126,7 @@
             {% endif %}
         {% else %}
             <div class="alert alert-info">
-                No posts yet. Be the first to <a href="{% url 'post-create' %}">create a post</a>!
+                No posts yet. Be the first to <a href="{% url 'post-normal-create' post_type='normal' %}">create a post</a>!
             </div>
         {% endif %}
     </div>

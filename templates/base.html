@@ -387,6 +387,19 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'post-community-create' post_type='community' %}">
+                            <i class="fas fa-users fa-lg me-2"></i>
+                            <span>Community Post</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'post-announcement-create' post_type='announcement' %}">
+                            <i class="fas fa-bullhorn fa-lg me-2"></i>
+                            <span>Announcement</span>
+                        </a>
+                    </li>
 
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center" href="{% url 'notifications' %}">
@@ -493,7 +506,7 @@
             <div class="mb-1">
                 <a href="{% url 'home' %}" class="text-muted me-2 text-decoration-none">Home</a>
                 <a href="{% url 'chat-inbox' %}" class="text-muted me-2 text-decoration-none">Messages</a>
-                <a href="{% url 'post-create' %}" class="text-muted text-decoration-none">Create Post</a>
+                <a href="{% url 'post-normal-create' post_type='normal' %}" class="text-muted text-decoration-none">Create Post</a>
             </div>
     
             <div class="mb-1">
@@ -524,7 +537,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="{% url 'post-create' %}" enctype="multipart/form-data" id="post-form">
+                    <form method="post" action="{% url 'post-normal-create' post_type='normal' %}" enctype="multipart/form-data" id="post-form">
                         {% csrf_token %}
                         <input type="hidden" name="from_modal" value="true">
                         <div class="mb-3">

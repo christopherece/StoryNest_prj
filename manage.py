@@ -2,11 +2,16 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import site
+
+# Add the current directory to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+site.addsitedir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'socialmedia.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'storynest.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

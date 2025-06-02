@@ -13,10 +13,10 @@
                 </div>
                 {% if object.author == user %}
                 <div class="ms-auto">
-                    <a href="{% url 'post-update' object.id %}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{% url 'post-'|add:object.get_post_type|add:'-update' pk=object.id post_type=object.get_post_type %}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-edit"></i> Edit
                     </a>
-                    <a href="{% url 'post-delete' object.id %}" class="btn btn-sm btn-outline-danger">
+                    <a href="{% url 'post-'|add:object.get_post_type|add:'-delete' pk=object.id post_type=object.get_post_type %}" class="btn btn-sm btn-outline-danger">
                         <i class="fas fa-trash"></i> Delete
                     </a>
                 </div>
@@ -47,7 +47,7 @@
                 <p>{{ object.content }}</p>
             </div>
             <div class="post-actions">
-                <button class="btn-like {% if user in object.likes.all %}active{% endif %}" data-url="{% url 'like-post' object.id %}">
+                <button class="btn-like {% if user in object.likes.all %}active{% endif %}" data-url="{% url 'like-post' pk=object.id post_type=object.get_post_type %}">
                     {% if user in object.likes.all %}
                         <i class="fas fa-heart"></i>
                     {% else %}
@@ -65,7 +65,7 @@
                 <h4>Comments</h4>
                 
                 {% if user.is_authenticated %}
-                <form method="POST" action="{% url 'add-comment' object.id %}" class="mb-4">
+                <form method="POST" action="{% url 'add-comment' pk=object.id post_type=object.get_post_type %}" class="mb-4">
                     {% csrf_token %}
                     <div class="form-group">
                         <textarea name="content" class="form-control" rows="3" placeholder="Add a comment..."></textarea>

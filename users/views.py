@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from .models import Profile
-from posts.models import Post
+from posts.models import NormalPost, AnnouncementPost, CommunityPost
 
 def register(request):
     if request.method == 'POST':
@@ -55,7 +55,14 @@ def user_profile(request, username):
     profile_user = get_object_or_404(User, username=username)
     
     # Get user's posts
-    posts = Post.objects.filter(author=profile_user).order_by('-created_at')[:5]
+    normal_posts = NormalPost.objects.filter(author=profile_user)
+    announcement_posts = AnnouncementPost.objects.filter(author=profile_user)
+    community_posts = CommunityPost.objects.filter(author=profile_user)
+    
+    # Combine and sort all posts
+    all_posts = list(normal_posts) + list(announcement_posts) + list(community_posts)
+    all_posts.sort(key=lambda x: x.created_at, reverse=True)
+    posts = all_posts[:5]
     
     # Check if this is the current user's profile
     is_own_profile = request.user.is_authenticated and request.user == profile_user

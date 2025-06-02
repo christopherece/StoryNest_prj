@@ -9,23 +9,37 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Count, Q
 from django.contrib.sessions.models import Session
-from .models import Post, Comment, Announcement, Notification
+from .models import (
+    BasePost, NormalPost, AnnouncementPost, CommunityPost,
+    Comment, Notification
+)
+from .forms import NormalPostForm, AnnouncementPostForm, CommunityPostForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 
 # Home view to display all posts
 class PostListView(LoginRequiredMixin, ListView):
-    model = Post
     template_name = 'posts/home.html'
     context_object_name = 'posts'
-    ordering = ['-created_at']
     paginate_by = 5
     login_url = 'login'  # Redirect to login page if not authenticated
+    
+    def get_queryset(self):
+        # Get all posts, ordered by creation date
+        normal_posts = NormalPost.objects.all()
+        announcement_posts = AnnouncementPost.objects.all()
+        community_posts = CommunityPost.objects.all()
+        
+        # Combine and sort all posts
+        all_posts = list(normal_posts) + list(announcement_posts) + list(community_posts)
+        all_posts.sort(key=lambda x: x.created_at, reverse=True)
+        
+        return all_posts
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Get upcoming active announcements
-        context['announcements'] = Announcement.objects.filter(
+        context['announcements'] = AnnouncementPost.objects.filter(
             is_active=True,
             event_date__gte=timezone.now()
         ).order_by('event_date')[:5]  # Limit to 5 upcoming events
@@ -47,7 +61,12 @@ class PostListView(LoginRequiredMixin, ListView):
         # Mark all as online and add post count
         for user in active_users:
             user.is_online = True
-            user.post_count = Post.objects.filter(author=user).count()
+            # Count posts for each type
+            user.post_count = {
+                'normal': NormalPost.objects.filter(author=user).count(),
+                'announcement': AnnouncementPost.objects.filter(author=user).count(),
+                'community': CommunityPost.objects.filter(author=user).count()
+            }
         
         context['active_users'] = active_users
         
@@ -62,14 +81,22 @@ class PostListView(LoginRequiredMixin, ListView):
 
 # User's posts view
 class UserPostListView(ListView):
-    model = Post
     template_name = 'posts/user_posts.html'
     context_object_name = 'posts'
     paginate_by = 5
     
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
-        return Post.objects.filter(author=user).order_by('-created_at')
+        # Get all posts for the user
+        normal_posts = NormalPost.objects.filter(author=user)
+        announcement_posts = AnnouncementPost.objects.filter(author=user)
+        community_posts = CommunityPost.objects.filter(author=user)
+        
+        # Combine and sort all posts
+        all_posts = list(normal_posts) + list(announcement_posts) + list(community_posts)
+        all_posts.sort(key=lambda x: x.created_at, reverse=True)
+        
+        return all_posts
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -79,51 +106,117 @@ class UserPostListView(ListView):
 
 # Post detail view
 class PostDetailView(DetailView):
-    model = Post
     template_name = 'posts/post_detail.html'
+    
+    def get_queryset(self):
+        # Get the specific post type based on URL parameter
+        post_type = self.kwargs.get('post_type')
+        if post_type == 'normal':
+            return NormalPost.objects.all()
+        elif post_type == 'announcement':
+            return AnnouncementPost.objects.all()
+        elif post_type == 'community':
+            return CommunityPost.objects.all()
+        return None
+    
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['comments'] = self.object.comments.all()
+        post_type = self.kwargs.get('post_type')
+        
+        # Get comments using post_id and post_type
+        context['comments'] = Comment.objects.filter(
+            post_id=self.object.id,
+            post_type=post_type
+        ).order_by('-created_at')
+        context['post_type'] = post_type
+        context['post_type_display'] = self.object.get_post_type_display()
         return context
+    
+    def get_success_url(self):
+        return reverse('home-post-detail', kwargs={'post_type': self.object.get_post_type(), 'pk': self.object.pk})
+    
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        return obj
 
 # Create post view
 class PostCreateView(LoginRequiredMixin, CreateView):
-    model = Post
     template_name = 'posts/post_form.html'
-    fields = ['title', 'content', 'image']
+    
+    def get_form_class(self):
+        post_type = self.kwargs.get('post_type')
+        if post_type == 'announcement':
+            return AnnouncementPostForm
+        elif post_type == 'community':
+            return CommunityPostForm
+        return NormalPostForm
+    
+    def get_queryset(self):
+        post_type = self.kwargs.get('post_type')
+        if post_type == 'announcement':
+            return AnnouncementPost.objects.all()
+        elif post_type == 'community':
+            return CommunityPost.objects.all()
+        return NormalPost.objects.all()
     
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        messages.success(self.request, 'Your post has been created!')
+        
+        # Get the post_type from URL parameters
+        post_type = self.kwargs.get('post_type')
+        
+        # Redirect to the correct post detail URL
+        if post_type == 'announcement':
+            return redirect('post-announcement-detail', pk=post.id, post_type='announcement')
+        elif post_type == 'community':
+            return redirect('post-community-detail', pk=post.id, post_type='community')
+        return redirect('post-normal-detail', pk=post.id, post_type='normal')
     
-    def post(self, request, *args, **kwargs):
-        # Check if this is a modal submission
-        if request.POST.get('from_modal') == 'true':
-            form = self.get_form()
-            if form.is_valid():
-                post = form.save(commit=False)
-                post.author = request.user
-                post.save()
-                messages.success(request, 'Your post has been created!')
-                return redirect('home')
-            else:
-                # If form is invalid, return to home with error message
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        messages.error(request, f'{field}: {error}')
-                return redirect('home')
-        # Otherwise process as normal
-        return super().post(request, *args, **kwargs)
+    def get_success_url(self):
+        # If this was a modal submission, redirect back to home
+        if self.request.POST.get('from_modal'):
+            return reverse('home')
+        return super().get_success_url()
 
 # Update post view
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Post
+    model = BasePost
     template_name = 'posts/post_form.html'
     fields = ['title', 'content', 'image']
     
+    def get_queryset(self):
+        post_type = self.kwargs.get('post_type')
+        if post_type == 'announcement':
+            return AnnouncementPost.objects.all()
+        elif post_type == 'community':
+            return CommunityPost.objects.all()
+        return NormalPost.objects.all()
+    
+    def get_object(self, queryset=None):
+        post_type = self.kwargs.get('post_type')
+        pk = self.kwargs.get('pk')
+        if post_type == 'announcement':
+            return get_object_or_404(AnnouncementPost, pk=pk)
+        elif post_type == 'community':
+            return get_object_or_404(CommunityPost, pk=pk)
+        return get_object_or_404(NormalPost, pk=pk)
+    
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+    
+    def get_success_url(self):
+        return reverse('home-post-detail', kwargs={'post_type': self.object.get_post_type(), 'pk': self.object.pk})
+    
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        messages.success(self.request, 'Your post has been updated!')
         return super().form_valid(form)
     
     def test_func(self):
@@ -132,48 +225,80 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 # Delete post view
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Post
+    model = BasePost
     template_name = 'posts/post_confirm_delete.html'
-    success_url = reverse_lazy('home')
+    
+    def get_queryset(self):
+        post_type = self.kwargs.get('post_type')
+        if post_type == 'announcement':
+            return AnnouncementPost.objects.all()
+        elif post_type == 'community':
+            return CommunityPost.objects.all()
+        return NormalPost.objects.all()
+    
+    def get_object(self, queryset=None):
+        post_type = self.kwargs.get('post_type')
+        pk = self.kwargs.get('pk')
+        if post_type == 'announcement':
+            return get_object_or_404(AnnouncementPost, pk=pk)
+        elif post_type == 'community':
+            return get_object_or_404(CommunityPost, pk=pk)
+        return get_object_or_404(NormalPost, pk=pk)
     
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author
+    
+    def get_success_url(self):
+        return reverse('home-post-detail', kwargs={'post_type': self.object.get_post_type(), 'pk': self.object.pk})
 
 # Add comment to post
 @login_required
-def add_comment(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    
+def add_comment(request, pk, post_type):
     if request.method == 'POST':
         content = request.POST.get('content')
-        if content:
-            # Create the comment
-            Comment.objects.create(
-                post=post,
-                author=request.user,
-                content=content
-            )
-            
-            # Create notification for post owner (if not the same as comment author)
-            if post.author != request.user:
-                Notification.objects.create(
-                    recipient=post.author,
-                    notification_type='comment',
-                    actor=request.user,
-                    post=post
-                )
-                
-            messages.success(request, 'Comment added successfully!')
-        else:
+        if not content:
             messages.error(request, 'Comment cannot be empty!')
-    
-    return redirect('post-detail', pk=pk)
+            return redirect('home-post-detail', pk=pk, post_type=post_type)
+        
+        if post_type == 'announcement':
+            post = get_object_or_404(AnnouncementPost, pk=pk)
+        elif post_type == 'community':
+            post = get_object_or_404(CommunityPost, pk=pk)
+        else:
+            post = get_object_or_404(NormalPost, pk=pk)
+        
+        comment = Comment.objects.create(
+            content=content,
+            author=request.user,
+            post_id=post.pk,
+            post_type=post_type
+        )
+        
+        if post.author != request.user:
+            Notification.objects.create(
+                recipient=post.author,
+                notification_type='comment',
+                actor=request.user,
+                post_id=post.pk,
+                post_type=post_type,
+                comment=comment
+            )
+        
+        messages.success(request, 'Comment added successfully!')
+        return redirect('home-post-detail', pk=pk, post_type=post_type)
+    return redirect('home')
 
 # Like/unlike post
 @login_required
-def like_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+def like_post(request, pk, post_type):
+    # Get the appropriate post model based on post_type
+    if post_type == 'announcement':
+        post = get_object_or_404(AnnouncementPost, pk=pk)
+    elif post_type == 'community':
+        post = get_object_or_404(CommunityPost, pk=pk)
+    else:
+        post = get_object_or_404(NormalPost, pk=pk)
     
     if request.user in post.likes.all():
         post.likes.remove(request.user)
