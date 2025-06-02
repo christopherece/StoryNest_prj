@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LoopedIn{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        /* Custom container for more compact layout */
+        @media (min-width: 1200px) {
+            .container, .container-lg, .container-md, .container-sm, .container-xl {
+                max-width: 1000px; /* Reduced from default 1140px */
+            }
+        }
+        
+        /* More compact spacing */
+        .card {
+            margin-bottom: 1rem; /* Reduced from default 1.5rem */
+        }
+        
+        .card-body {
+            padding: 1rem; /* Reduced from default 1.25rem */
+        }
+        
+        .post-card {
+            margin-bottom: 1rem; /* Reduced from default 1.5rem */
+        }
+        
+        /* Reduce padding in various elements */
+        .py-4 {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        
+        .mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .mt-4 {
+            margin-top: 1rem !important;
+        }
+        
+        /* Compact row spacing */
+        .row > * {
+            padding-right: calc(var(--bs-gutter-x) * .4);
+            padding-left: calc(var(--bs-gutter-x) * .4);
+        }
+        
+        /* Mobile-specific improvements */
+        @media (max-width: 767.98px) {
+            /* Adjust content padding for mobile */
+            .content {
+                padding-top: 0 !important; /* Removed padding */
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            /* iPhone and modern mobile optimization */
+            @media screen and (max-width: 428px) { /* iPhone 15 Pro Max width */
+                .content {
+                    margin-top: 30px !important;
+                }
+                .navbar {
+                    padding-top: 0.1rem !important;
+                    padding-bottom: 0.1rem !important;
+                    min-height: 30px !important;
+                }
+                .navbar-brand {
+                    font-size: 0.9rem;
+                }
+                .nav-link {
+                    padding: 0.2rem 0.5rem;
+                }
+                .navbar .fa-lg {
+                    font-size: 1em;
+                }
+            }
+            
+            /* Make cards full-width on mobile */
+            .card {
+                margin-left: -10px;
+                margin-right: -10px;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+            
+            /* Improve post readability on mobile */
+            .post-card .post-content {
+                font-size: 15px;
+                line-height: 1.5;
+            }
+            
+            /* Adjust post action buttons for touch */
+            .post-actions button, .post-actions a {
+                padding: 8px 12px;
+                margin-right: 8px;
+            }
+            
+            /* Improve dropdown menus on mobile */
+            .dropdown-menu {
+                width: auto;
+                min-width: 200px;
+                max-width: 300px;
+            }
+            
+            /* Ensure user dropdown is visible */
+            #navbarDropdown + .dropdown-menu {
+                position: absolute;
+                transform: none;
+                right: 0;
+                left: auto;
+            }
+            
+            /* Fix navbar spacing on mobile */
+            .navbar .nav-link {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            /* Improve form elements on mobile */
+            input, textarea, select, .form-control {
+                font-size: 16px !important; /* Prevents iOS zoom on focus */
+            }
+        }
+        
+        :root {
+            /* LinkedIn inspired colors */
+            --linkedin-blue: #0a66c2;
+            --linkedin-light-blue: #e8f3fc;
+            --linkedin-dark-blue: #004182;
+            --linkedin-bg: #f3f2ef;
+            --linkedin-text: #191919;
+            --linkedin-secondary-text: #666666;
+            --linkedin-border: #e0e0e0;
+            --linkedin-card-bg: #ffffff;
+            --linkedin-hover: #f9fafb;
+            --linkedin-button-hover: #004182;
+            
+            /* Theme variables */
+            --bs-primary: var(--linkedin-blue);
+            --bs-body-bg: var(--linkedin-bg);
+            --bs-body-color: var(--linkedin-text);
+            --post-card-bg: var(--linkedin-card-bg);
+            --post-header-border: var(--linkedin-border);
+            --post-actions-border: var(--linkedin-border);
+            --comment-section-bg: var(--linkedin-hover);
+            --comment-border: var(--linkedin-border);
+        }
+        
+        [data-bs-theme="dark"] {
+            --linkedin-blue: #0a66c2;
+            --linkedin-light-blue: #1d2226;
+            --linkedin-dark-blue: #0a66c2;
+            --linkedin-bg: #1d2226;
+            --linkedin-text: #ffffff;
+            --linkedin-secondary-text: #b0b0b0;
+            --linkedin-border: #424242;
+            --linkedin-card-bg: #2d333a;
+            --linkedin-hover: #38434f;
+            --linkedin-button-hover: #0073b1;
+            
+            --bs-primary: var(--linkedin-blue);
+            --bs-body-bg: var(--linkedin-bg);
+            --bs-body-color: var(--linkedin-text);
+            --post-card-bg: var(--linkedin-card-bg);
+            --post-header-border: var(--linkedin-border);
+            --post-actions-border: var(--linkedin-border);
+            --comment-section-bg: var(--linkedin-hover);
+            --comment-border: var(--linkedin-border);
+        }
+        
+        /* General styles */
+        body {
+            background-color: var(--bs-body-bg);
+            padding-top: 60px;
+            color: var(--bs-body-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        .content {
+            margin-top: 20px;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            background-color: var(--linkedin-card-bg) !important;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--linkedin-border);
+            padding: 0.15rem 1rem;
+            min-height: 30px;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--linkedin-blue) !important;
+        }
+        
+        .nav-link {
+            color: var(--linkedin-text) !important;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--linkedin-blue) !important;
+        }
+        
+        /* Mobile navbar adjustments */
+        @media (max-width: 767.98px) {
+            .navbar-nav .nav-item {
+                text-align: center;
+            }
+            
+            .navbar-nav .nav-link {
+                justify-content: center;
+            }
+        }
+        
+        .navbar-dark .navbar-nav .nav-link {
+            color: var(--linkedin-text) !important;
+        }
+        
+        /* Button styling */
+        .btn-primary {
+            background-color: var(--linkedin-blue);
+            border-color: var(--linkedin-blue);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--linkedin-dark-blue);
+            border-color: var(--linkedin-dark-blue);
+        }
+        
+        .btn-outline-primary {
+            color: var(--linkedin-blue);
+            border-color: var(--linkedin-blue);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--linkedin-light-blue);
+            color: var(--linkedin-blue);
+            border-color: var(--linkedin-blue);
+        }
+        
+        /* Card styling */
+        .card {
+            border: 1px solid var(--linkedin-border);
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.05);
+            background-color: var(--post-card-bg);
+        }
+        
+        .card-header {
+            background-color: var(--post-card-bg);
+            border-bottom: 1px solid var(--linkedin-border);
+            padding: 12px 16px;
+        }
+        
+        /* Post styling */
+        .post-card {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.05);
+            background-color: var(--post-card-bg);
+            border: 1px solid var(--linkedin-border);
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--post-header-border);
+        }
+        
+        .post-header img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+        
+        .post-content {
+            padding: 16px;
+        }
+        
+        .post-actions {
+            padding: 8px 16px;
+            border-top: 1px solid var(--post-actions-border);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .comment-section {
+            padding: 16px;
+            background-color: var(--comment-section-bg);
+            border-top: 1px solid var(--post-actions-border);
+        }
+        
+        .comment {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--comment-border);
+        }
+        
+        /* Profile styling */
+        .profile-header {
+            background-color: var(--linkedin-card-bg);
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.05);
+            border: 1px solid var(--linkedin-border);
+        }
+        
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--linkedin-blue);
+        }
+        
+        /* Like button */
+        .btn-like {
+            color: var(--linkedin-secondary-text);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        
+        .btn-like:hover {
+            background-color: var(--linkedin-hover);
+        }
+        
+        .btn-like.active {
+            color: var(--linkedin-blue);
+        }
+        
+        /* Dropdown styling */
+        .dropdown-menu {
+            border: 1px solid var(--linkedin-border);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--linkedin-hover);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                {% if site_config.logo %}
+                    <img src="{{ site_config.logo.url }}" alt="{{ site_config.logo_name }}" height="30" class="me-1">
+                {% else %}
+                    <i class="fas fa-project-diagram me-1"></i>
+                {% endif %}
+                {{ site_config.logo_name }}
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+
+                
+                <ul class="navbar-nav mx-auto text-center">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'home' %}">
+                            <i class="fas fa-home fa-lg me-2"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'notifications' %}">
+                            <div class="position-relative me-2">
+                                <i class="fas fa-bell fa-lg"></i>
+                                {% if unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;" id="notification-counter">
+                                    {{ unread_notifications_count }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <span>Notifications</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'chat-inbox' %}">
+                            <div class="position-relative me-2">
+                                <i class="fas fa-envelope fa-lg"></i>
+                                <span id="unread-messages-count" class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem; display: none;">0</span>
+                            </div>
+                            <span>Messaging</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+
+                
+                {% if user.is_authenticated %}
+                <!-- User dropdown for mobile and desktop -->                
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown text-center">
+                        <a class="nav-link d-flex align-items-center justify-content-center dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{{ user.profile.image_url }}" alt="{{ user.username }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                            <span class="ms-1 d-none d-lg-inline">{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li class="px-3 py-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ user.profile.image_url }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 48px; height: 48px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0">{{ user.get_full_name|default:user.username }}</h6>
+                                        <p class="text-muted small mb-0">{{ user.profile.bio|default:""|truncatechars:40 }}</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i> View Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user-posts' user.username %}"><i class="fas fa-file-alt me-2"></i> My Posts</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                                    {% csrf_token %}
+                                </form>
+                                <a class="dropdown-item" href="javascript:void(0);" id="logout-link"><i class="fas fa-sign-out-alt me-2"></i> Sign Out</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link btn btn-link text-center" id="darkModeToggle">
+                            <i class="fas fa-moon fa-lg d-block mb-1" id="darkModeIcon"></i>
+                            <span class="small">Theme</span>
+                        </button>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Sign In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'register' %}" class="btn btn-primary">Sign Up</a>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container content" style="margin-top: 10px; padding-top: 0;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} fade show" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-4 py-3 border-top" style="background-color: var(--linkedin-card-bg); border-color: var(--linkedin-border);">
+        <div class="container text-center text-muted small">
+            <h6 class="text-primary mb-1">
+                <i class="fas fa-project-diagram me-1"></i> LoopedIn
+            </h6>
+            <p class="mb-1">
+                &copy; {% now "Y" %} LoopedIn | All rights reserved |
+                <a href="https://topitsolutions.co.nz" target="_blank" class="text-decoration-none">TopITSolutions</a>
+            </p>
+            
+            <div class="mb-1">
+                <a href="{% url 'home' %}" class="text-muted me-2 text-decoration-none">Home</a>
+                <a href="{% url 'chat-inbox' %}" class="text-muted me-2 text-decoration-none">Messages</a>
+                <a href="{% url 'post-create' %}" class="text-muted text-decoration-none">Create Post</a>
+            </div>
+    
+            <div class="mb-1">
+                <a href="{% url 'about' %}" class="text-muted me-2 text-decoration-none">About</a>
+                <a href="{% url 'privacy' %}" class="text-muted me-2 text-decoration-none">Privacy</a>
+                <a href="{% url 'terms' %}" class="text-muted text-decoration-none">Terms</a>
+            </div>
+    
+            <div>
+                <a href="#" class="text-muted me-2"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-muted me-2"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-muted me-2"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-muted"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    
+    
+
+    <!-- Post Creation Modal -->
+    {% if user.is_authenticated %}
+    <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createPostModalLabel">Create a Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'post-create' %}" enctype="multipart/form-data" id="post-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="from_modal" value="true">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ user.profile.image_url }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0">{{ user.get_full_name|default:user.username }}</h6>
+                                    <small class="text-muted">Posting to your network</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="id_title" name="title" placeholder="Add a title" required>
+                            </div>
+                            <textarea class="form-control" id="id_content" name="content" rows="5" placeholder="What do you want to share?" required></textarea>
+                        </div>
+                        <div class="mb-3" style="display: none;">
+                            <input type="file" class="form-control" id="id_image" name="image" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+                            <input type="hidden" id="media_type" name="media_type" value="">
+                        </div>
+                        <div id="image-preview" class="mb-3 d-none">
+                            <div id="image-container">
+                                <img src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                            <div id="video-container" class="d-none">
+                                <video controls class="img-fluid rounded" style="max-height: 200px;"></video>
+                            </div>
+                            <div id="document-container" class="d-none">
+                                <div class="p-3 border rounded bg-light text-center">
+                                    <i class="fas fa-file-alt fa-3x mb-2"></i>
+                                    <p id="document-name" class="mb-0"></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="remove-media">Remove</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex justify-content-between w-100">
+                        <div>
+                            <button type="button" class="btn btn-outline-primary" id="add-media-btn">
+                                <i class="fas fa-file-upload"></i> <span id="media-btn-text">Add Media</span>
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="submit-post">Post</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dark mode toggle functionality
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            const htmlElement = document.documentElement;
+
+            // Alert fade out functionality
+            const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    setTimeout(function() {
+                        alert.classList.add('fade');
+                        alert.classList.remove('show');
+                        setTimeout(() => alert.remove(), 500);
+                    }, 5000);
+        });
+            
+            // Check if user has a preference stored
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme) {
+                htmlElement.setAttribute('data-bs-theme', currentTheme);
+                if (currentTheme === 'dark') {
+                    darkModeIcon.classList.remove('fa-moon');
+                    darkModeIcon.classList.add('fa-sun');
+                }
+            }
+            
+            // Toggle dark/light mode
+            darkModeToggle.addEventListener('click', function() {
+                if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    darkModeIcon.classList.remove('fa-sun');
+                    darkModeIcon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    darkModeIcon.classList.remove('fa-moon');
+                    darkModeIcon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Logout functionality
+            $('#logout-link').click(function(e) {
+                e.preventDefault();
+                // Submit the logout form that already contains the CSRF token
+                $('#logout-form').submit();
+            });
+            
+            // Like button functionality
+            $(document).on('click', '.btn-like', function() {
+                const btn = $(this);
+                const url = btn.data('url');
+                
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(data) {
+                        if (data.liked) {
+                            btn.addClass('active');
+                            btn.html(`<i class="fas fa-heart"></i> ${data.count}`);
+                        } else {
+                            btn.removeClass('active');
+                            btn.html(`<i class="far fa-heart"></i> ${data.count}`);
+                        }
+                    }
+                });
+            });
+            
+            // Notification functionality
+            $('.notification-link').click(function() {
+                const notificationId = $(this).data('notification-id');
+                const notificationItem = $(this);
+                
+                // Mark notification as read via AJAX
+                $.ajax({
+                    url: `/notifications/${notificationId}/mark-read/`,
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function() {
+                        // Remove the highlight from this notification
+                        notificationItem.removeClass('bg-light');
+                        
+                        // Decrement the notification counter
+                        let counter = $('#notification-counter');
+                        let count = parseInt(counter.text());
+                        if (count > 1) {
+                            counter.text(count - 1);
+                        } else {
+                            // Hide the counter if it reaches zero
+                            counter.parent().hide();
+                        }
+                    }
+                });
+            });
+            
+            // Check for unread messages
+            function checkUnreadMessages() {
+                if (!{{ user.is_authenticated|yesno:"true,false" }}) return;
+                
+                $.ajax({
+                    url: '{% url "chat-unread-count" %}',
+                    type: 'GET',
+                    success: function(data) {
+                        const unreadCount = data.unread_count;
+                        const badge = $('#unread-messages-count');
+                        
+                        if (unreadCount > 0) {
+                            badge.text(unreadCount);
+                            badge.show();
+                        } else {
+                            badge.hide();
+                        }
+                    }
+                });
+            }
+            
+            // Check for unread messages on page load and every 30 seconds
+            if ({{ user.is_authenticated|yesno:"true,false" }}) {
+                checkUnreadMessages();
+                setInterval(checkUnreadMessages, 30000); // 30 seconds
+            }
+            
+            // Post creation modal functionality
+            const addMediaBtn = document.getElementById('add-media-btn');
+            const mediaButtonText = document.getElementById('media-btn-text');
+            const imageInput = document.getElementById('id_image');
+            const imagePreview = document.getElementById('image-preview');
+            const previewImage = imagePreview?.querySelector('img');
+            const removeImageBtn = document.getElementById('remove-image');
+            const submitPostBtn = document.getElementById('submit-post');
+            const postForm = document.getElementById('post-form');
+            
+            if (addMediaBtn && imageInput) {
+                // Open file dialog when add media button is clicked
+                addMediaBtn.addEventListener('click', function() {
+                    imageInput.click();
+                });
+                
+                // Show preview when file is selected
+                imageInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        const mediaType = document.getElementById('media_type').value || 'photo';
+                        const reader = new FileReader();
+                        
+                        // Get containers
+                        const imageContainer = document.getElementById('image-container');
+                        const videoContainer = document.getElementById('video-container');
+                        const documentContainer = document.getElementById('document-container');
+                        const documentName = document.getElementById('document-name');
+                        
+                        // Hide all containers first
+                        imageContainer.classList.add('d-none');
+                        videoContainer.classList.add('d-none');
+                        documentContainer.classList.add('d-none');
+                        
+                        if (file.type.startsWith('image/')) {
+                            // Handle image files
+                            reader.onload = function(e) {
+                                const img = imageContainer.querySelector('img');
+                                img.src = e.target.result;
+                                imageContainer.classList.remove('d-none');
+                                imagePreview.classList.remove('d-none');
+                            };
+                            reader.readAsDataURL(file);
+                        } else if (file.type.startsWith('video/')) {
+                            // Handle video files
+                            reader.onload = function(e) {
+                                const video = videoContainer.querySelector('video');
+                                video.src = e.target.result;
+                                videoContainer.classList.remove('d-none');
+                                imagePreview.classList.remove('d-none');
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            // Handle document files
+                            documentName.textContent = file.name;
+                            documentContainer.classList.remove('d-none');
+                            imagePreview.classList.remove('d-none');
+                        }
+                    }
+                });
+                
+                // Remove media when remove button is clicked
+                const removeMediaBtn = document.getElementById('remove-media');
+                if (removeMediaBtn) {
+                    removeMediaBtn.addEventListener('click', function() {
+                        imageInput.value = '';
+                        imagePreview.classList.add('d-none');
+                        document.getElementById('media_type').value = '';
+                    });
+                }
+                
+                // Handle media type selection from the home page
+                const mediaButtons = document.querySelectorAll('[data-media-type]');
+                const mediaTypeInput = document.getElementById('media_type');
+                
+                if (mediaButtons.length > 0 && mediaTypeInput) {
+                    mediaButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const mediaType = this.getAttribute('data-media-type');
+                            mediaTypeInput.value = mediaType;
+                            
+                            // Update the button text based on media type
+                            if (mediaButtonText) {
+                                if (mediaType === 'photo') {
+                                    mediaButtonText.textContent = 'Add Photo';
+                                    addMediaBtn.querySelector('i').className = 'fas fa-image';
+                                } else if (mediaType === 'video') {
+                                    mediaButtonText.textContent = 'Add Video';
+                                    addMediaBtn.querySelector('i').className = 'fas fa-video';
+                                } else if (mediaType === 'document') {
+                                    mediaButtonText.textContent = 'Add Document';
+                                    addMediaBtn.querySelector('i').className = 'fas fa-file-alt';
+                                } else {
+                                    mediaButtonText.textContent = 'Add Media';
+                                    addMediaBtn.querySelector('i').className = 'fas fa-file-upload';
+                                }
+                            }
+                            
+                            // Automatically open file dialog based on media type
+                            setTimeout(() => {
+                                if (imageInput) {
+                                    // Update accept attribute based on media type
+                                    if (mediaType === 'photo') {
+                                        imageInput.setAttribute('accept', 'image/*');
+                                    } else if (mediaType === 'video') {
+                                        imageInput.setAttribute('accept', 'video/*');
+                                    } else if (mediaType === 'document') {
+                                        imageInput.setAttribute('accept', '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx');
+                                    }
+                                    imageInput.click();
+                                }
+                            }, 300);
+                        });
+                    });
+                }
+                
+                // Submit post when submit button is clicked
+                if (submitPostBtn && postForm) {
+                    submitPostBtn.addEventListener('click', function() {
+                        // Validate form fields
+                        const titleField = document.getElementById('id_title');
+                        const contentField = document.getElementById('id_content');
+                        
+                        if (!titleField.value.trim()) {
+                            titleField.classList.add('is-invalid');
+                            return;
+                        } else {
+                            titleField.classList.remove('is-invalid');
+                        }
+                        
+                        if (!contentField.value.trim()) {
+                            contentField.classList.add('is-invalid');
+                            return;
+                        } else {
+                            contentField.classList.remove('is-invalid');
+                        }
+                        
+                        // Submit the form
+                        postForm.submit();
+                    });
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

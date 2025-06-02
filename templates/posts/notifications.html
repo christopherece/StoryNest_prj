@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Notifications - Social Media{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Notifications</h2>
+                {% if notifications %}
+                <a href="{% url 'notifications' %}?mark_all_read=1" class="btn btn-light btn-sm">Mark All as Read</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if notifications %}
+                    <ul class="list-group list-group-flush">
+                        {% for notification in notifications %}
+                            <li class="list-group-item {% if not notification.is_read %}bg-light{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ notification.actor.profile.image_url }}" alt="{{ notification.actor.username }}" class="rounded-circle me-3" style="width: 40px; height: 40px;">
+                                    <div>
+                                        <p class="mb-1">
+                                            <strong>{{ notification.actor.username }}</strong> 
+                                            {% if notification.notification_type == 'like' %}
+                                                liked your post 
+                                            {% elif notification.notification_type == 'comment' %}
+                                                commented on your post 
+                                            {% endif %}
+                                            "<a href="{% url 'mark-notification-read' notification.id %}">{{ notification.post.title }}</a>"
+                                        </p>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                    </div>
+                                    {% if not notification.is_read %}
+                                        <span class="badge bg-primary ms-auto">New</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="p-4 text-center">
+                        <p class="text-muted mb-0">You have no notifications at this time.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

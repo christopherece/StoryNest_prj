@@ -1,0 +1,67 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | LoopedIn Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style type="text/css">
+/* LoopedIn Admin Theme - LinkedIn inspired colors with improved contrast */
+#header {
+    background: #0a66c2;
+    color: #ffffff;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #ffffff;
+}
+
+#user-tools a:focus, #user-tools a:hover {
+    color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+
+.module h2, .module caption, .inline-group h2 {
+    background: #0a66c2;
+}
+
+div.breadcrumbs {
+    background: #004182;
+}
+
+a:link, a:visited {
+    color: #0a66c2;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #0a66c2;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #004182;
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #0a66c2;
+}
+
+.button.default:hover, input[type=submit].default:hover {
+    background: #004182;
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {% if site_config.logo %}
+            <img src="{{ site_config.logo.url }}" alt="{{ site_config.logo_name }} Logo" height="30" style="margin-right: 10px;">
+        {% else %}
+            <img src="{% static 'img/loopedinlogo.png' %}" alt="LoopedIn Logo" height="30" style="margin-right: 10px;">
+        {% endif %}
+        {{ site_config.logo_name }} Admin
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

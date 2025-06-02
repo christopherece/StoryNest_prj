@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ object.title }} - Social Media{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card post-card">
+            <div class="post-header">
+                <img src="{{ object.author.profile.image_url }}" alt="{{ object.author.username }}">
+                <div>
+                    <h5 class="mb-0"><a href="{% url 'user-profile' object.author.username %}" class="text-decoration-none">{{ object.author.username }}</a></h5>
+                    <small class="text-muted">{{ object.created_at|date:"F d, Y" }}</small>
+                </div>
+                {% if object.author == user %}
+                <div class="ms-auto">
+                    <a href="{% url 'post-update' object.id %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'post-delete' object.id %}" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="post-content">
+                <h2>{{ object.title }}</h2>
+                {% if object.image %}
+                <div class="post-media mb-3">
+                    {% with ext=object.image.url|lower %}
+                        {% if ext|slice:"-4:" == '.mp4' or ext|slice:"-4:" == '.mov' or ext|slice:"-4:" == '.avi' or ext|slice:"-5:" == '.webm' %}
+                        <video controls class="img-fluid rounded w-100">
+                            <source src="{{ object.image.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% elif ext|slice:"-4:" == '.pdf' or ext|slice:"-5:" == '.docx' or ext|slice:"-4:" == '.doc' or ext|slice:"-5:" == '.xlsx' or ext|slice:"-4:" == '.xls' or ext|slice:"-5:" == '.pptx' or ext|slice:"-4:" == '.ppt' %}
+                        <div class="p-4 border rounded bg-light text-center">
+                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+                            <p class="mb-2">{{ object.image.name|slice:"11:" }}</p>
+                            <a href="{{ object.image.url }}" class="btn btn-primary" target="_blank">View Document</a>
+                        </div>
+                        {% else %}
+                        <img src="{{ object.image.url }}" alt="{{ object.title }}" class="img-fluid rounded">
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                {% endif %}
+                <p>{{ object.content }}</p>
+            </div>
+            <div class="post-actions">
+                <button class="btn-like {% if user in object.likes.all %}active{% endif %}" data-url="{% url 'like-post' object.id %}">
+                    {% if user in object.likes.all %}
+                        <i class="fas fa-heart"></i>
+                    {% else %}
+                        <i class="far fa-heart"></i>
+                    {% endif %}
+                    {{ object.get_like_count }}
+                </button>
+                <span>
+                    <i class="far fa-comment"></i> {{ comments.count }} Comments
+                </span>
+            </div>
+            
+            <!-- Comments Section -->
+            <div class="comment-section">
+                <h4>Comments</h4>
+                
+                {% if user.is_authenticated %}
+                <form method="POST" action="{% url 'add-comment' object.id %}" class="mb-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <textarea name="content" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">Post Comment</button>
+                </form>
+                {% endif %}
+                
+                {% if comments %}
+                    {% for comment in comments %}
+                        <div class="comment">
+                            <div class="d-flex">
+                                <img src="{{ comment.author.profile.image_url }}" alt="{{ comment.author.username }}" class="rounded-circle me-2" style="width: 30px; height: 30px;">
+                                <div>
+                                    <h6 class="mb-0"><a href="{% url 'user-posts' comment.author.username %}" class="text-decoration-none">{{ comment.author.username }}</a></h6>
+                                    <small class="text-muted">{{ comment.created_at|date:"F d, Y" }}</small>
+                                </div>
+                            </div>
+                            <p class="mt-2">{{ comment.content }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No comments yet. Be the first to comment!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">About the Author</h4>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ object.author.profile.image_url }}" alt="{{ object.author.username }}" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
+                <h5>{{ object.author.username }}</h5>
+                <p>{{ object.author.profile.bio|default:"No bio available" }}</p>
+                <a href="{% url 'user-posts' object.author.username %}" class="btn btn-outline-primary">View All Posts</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

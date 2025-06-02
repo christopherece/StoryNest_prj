@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ site_config.welcome_title|default:"Welcome to LoopedIn" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 text-center">
+            <h1 class="display-4 mb-4">{{ site_config.welcome_title|default:"Welcome to LoopedIn" }}</h1>
+            <p class="lead mb-4">{{ site_config.welcome_subtitle|default:"Connect with friends and share your experiences" }}</p>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-100">Sign In</a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg w-100">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                            <h3 class="h5 mb-3">{{ site_config.connect_heading|default:"Connect" }}</h3>
+                            <p>{{ site_config.connect_description|default:"Find and connect with friends, family, and like-minded individuals." }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-share-alt fa-3x mb-3 text-primary"></i>
+                            <h3 class="h5 mb-3">{{ site_config.share_heading|default:"Share" }}</h3>
+                            <p>{{ site_config.share_description|default:"Share your thoughts, photos, and experiences with your network." }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap fa-3x mb-3 text-primary"></i>
+                            <h3 class="h5 mb-3">{{ site_config.learn_heading|default:"Learn" }}</h3>
+                            <p>{{ site_config.learn_description|default:"Discover new opportunities and grow your professional network." }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
