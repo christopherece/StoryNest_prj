@@ -134,10 +134,14 @@
 
         
         <!-- Announcements Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Upcoming Events</h4>
-                <i class="fas fa-calendar-alt"></i>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary text-white p-2 rounded me-2">
+                        <i class="fas fa-calendar-alt fs-5"></i>
+                    </div>
+                    <h4 class="mb-0">Upcoming Events</h4>
+                </div>
             </div>
             <div class="card-body p-0">
                 {% if announcements %}
@@ -145,7 +149,7 @@
                         {% for announcement in announcements %}
                             <li class="list-group-item">
                                 <div class="d-flex align-items-center mb-2">
-                                    <div class="event-date text-center me-3 rounded p-1" style="min-width: 60px; background-color: var(--linkedin-light-blue); color: var(--linkedin-text);">
+                                    <div class="event-date text-center me-3 rounded p-1" style="min-width: 60px; background-color: var(--primary-color); color: white;">
                                         <span class="d-block fw-bold">{{ announcement.event_date|date:"M" }}</span>
                                         <span class="d-block fs-4">{{ announcement.event_date|date:"d" }}</span>
                                     </div>
@@ -166,16 +170,20 @@
             </div>
             {% if user.is_staff %}
                 <div class="card-footer text-center">
-                    <a href="/admin/posts/announcement/add/" class="btn btn-sm btn-outline-info">Add New Event</a>
+                    <a href="/admin/posts/announcement/add/" class="btn btn-sm btn-outline-primary">Add New Event</a>
                 </div>
             {% endif %}
         </div>
         
         <!-- Active Users Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Active Users</h4>
-                <i class="fas fa-users"></i>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success text-white p-2 rounded me-2">
+                        <i class="fas fa-users fs-5"></i>
+                    </div>
+                    <h4 class="mb-0">Active Users</h4>
+                </div>
             </div>
             <div class="card-body p-0">
                 {% if active_users %}
@@ -183,8 +191,8 @@
                         {% for active_user in active_users %}
                             <li class="list-group-item">
                                 <div class="d-flex align-items-center">
-                                    <div class="position-relative me-2">
-                                        <img src="{{ active_user.profile.image_url }}" alt="{{ active_user.username }}" class="rounded-circle" style="width: 40px; height: 40px;">
+                                    <div class="position-relative me-3">
+                                        <img src="{{ active_user.profile.image_url }}" alt="{{ active_user.username }}" class="rounded-circle" style="width: 48px; height: 48px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                         {% if active_user.is_online %}
                                             <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-light rounded-circle" style="width: 12px; height: 12px;" title="Online"></span>
                                         {% endif %}
@@ -198,13 +206,10 @@
                                         </h6>
                                     </div>
                                     <div class="ms-auto d-flex align-items-center">
-                                        {% if active_user.is_staff %}
-                                            <span class="badge bg-primary me-2">Admin</span>
-                                        {% endif %}
-                                        {% if user.is_authenticated and user != active_user %}
-                                            <a href="{% url 'chat-start' active_user.username %}" class="btn btn-sm btn-outline-primary" title="Send message">
+                                        {% if active_user != user %}
+                                            <button class="btn btn-sm btn-outline-primary" onclick="startChat('{{ active_user.username }}')" title="Send message">
                                                 <i class="fas fa-envelope"></i>
-                                            </a>
+                                            </button>
                                         {% endif %}
                                     </div>
                                 </div>

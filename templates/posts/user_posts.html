@@ -42,11 +42,65 @@
                         {% endif %}
                     </div>
                     <div class="post-content">
-                        <h3><a href="{% url 'post-detail' post.id %}" class="text-decoration-none">{{ post.title }}</a></h3>
+                        <h3><a href="{% url 'home-post-detail' post.post_type post.id %}" class="text-decoration-none">{{ post.title }}</a></h3>
                         <p>{{ post.content|truncatewords:50 }}</p>
                     </div>
                     <div class="post-actions">
-                        <button class="btn-like {% if user in post.likes.all %}active{% endif %}" data-url="{% url 'like-post' post.id %}">
+                        <!-- Debug Info -->
+                        <div class="debug-info d-none" data-debug="true">
+                            <div class="debug-item">
+                                <span class="label">Post Type:</span>
+                                <span class="value">{{ post.post_type }}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Post ID:</span>
+                                <span class="value">{{ post.id }}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Is Normal Post:</span>
+                                <span class="value">{% if post.post_type == 'normal' %}Yes{% else %}No{% endif %}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Is Announcement:</span>
+                                <span class="value">{% if post.post_type == 'announcement' %}Yes{% else %}No{% endif %}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Is Community:</span>
+                                <span class="value">{% if post.post_type == 'community' %}Yes{% else %}No{% endif %}</span>
+                            </div>
+                        </div>
+                        <button class="btn-like {% if user in post.likes.all %}active{% endif %}"
+                            data-post-type="{% if post.post_type %}{{ post.post_type|escapejs }}{% else %}normal{% endif %}"
+                            data-post-id="{% if post.id %}{{ post.id }}{% else %}0{% endif %}"
+                            data-debug="true"
+                            title="Post Type: {% if post.post_type %}{{ post.post_type }}{% else %}unknown{% endif %} | ID: {% if post.id %}{{ post.id }}{% else %}0{% endif %}">
+                            <i class="{% if user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                            <span class="like-count">{{ post.get_like_count }}</span>
+                        </button>
+                        <!-- Debug Info -->
+                        <div class="debug-info d-none" data-debug="true">
+                            <div class="debug-item">
+                                <span class="label">Post Type:</span>
+                                <span class="value">{{ post.post_type|default:'unknown' }}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Post ID:</span>
+                                <span class="value">{{ post.id|default:'0' }}</span>
+                            </div>
+
+                            <div class="debug-item">
+                                <span class="label">Is Normal Post:</span>
+                                <span class="value">{% if post.post_type == 'normal' %}Yes{% else %}No{% endif %}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Is Announcement:</span>
+                                <span class="value">{% if post.post_type == 'announcement' %}Yes{% else %}No{% endif %}</span>
+                            </div>
+                            <div class="debug-item">
+                                <span class="label">Is Community:</span>
+                                <span class="value">{% if post.post_type == 'community' %}Yes{% else %}No{% endif %}</span>
+                            </div>
+                        </div>
                             {% if user in post.likes.all %}
                                 <i class="fas fa-heart"></i>
                             {% else %}
@@ -54,7 +108,7 @@
                             {% endif %}
                             {{ post.get_like_count }}
                         </button>
-                        <a href="{% url 'post-detail' post.id %}" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url 'home-post-detail' post.post_type post.id %}" class="btn btn-sm btn-outline-primary">
                             <i class="far fa-comment"></i> {{ post.comments.count }} Comments
                         </a>
                     </div>

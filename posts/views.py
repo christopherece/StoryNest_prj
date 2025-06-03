@@ -91,9 +91,19 @@ class UserPostListView(ListView):
         community_posts = CommunityPost.objects.filter(author=user)
         
         # Combine and sort all posts
-        all_posts = list(normal_posts) + list(announcement_posts) + list(community_posts)
-        all_posts.sort(key=lambda x: x.created_at, reverse=True)
+        all_posts = []
+        for post in list(normal_posts) + list(announcement_posts) + list(community_posts):
+            # Ensure post type is set
+            if not hasattr(post, 'post_type'):
+                if isinstance(post, NormalPost):
+                    post.post_type = 'normal'
+                elif isinstance(post, AnnouncementPost):
+                    post.post_type = 'announcement'
+                elif isinstance(post, CommunityPost):
+                    post.post_type = 'community'
+            all_posts.append(post)
         
+        all_posts.sort(key=lambda x: x.created_at, reverse=True)
         return all_posts
     
     def get_context_data(self, **kwargs):
@@ -248,7 +258,14 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == post.author
     
     def get_success_url(self):
-        return reverse('home-post-detail', kwargs={'post_type': self.object.get_post_type(), 'pk': self.object.pk})
+        return reverse('home')
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.delete()
+        messages.success(request, 'Post has been deleted successfully.')
+        return redirect(success_url)
 
 # Add comment to post
 @login_required

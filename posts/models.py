@@ -122,12 +122,18 @@ class BasePost(models.Model):
 
 # Normal Post - Regular user posts
 class NormalPost(BasePost):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.post_type = 'normal'
 
 # Announcement Post - Special posts for announcements
 class AnnouncementPost(BasePost):
     event_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.post_type = 'announcement'
     
     @property
     def is_past_event(self):
@@ -142,6 +148,10 @@ class CommunityPost(BasePost):
         ('support', 'Support & Help'),
         ('ideas', 'Feature Requests')
     ], default='general')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.post_type = 'community'
 
 # Comment model for all post types
 class Comment(models.Model):

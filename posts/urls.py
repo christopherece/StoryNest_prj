@@ -35,8 +35,8 @@ urlpatterns = [
     path('home/post/<str:post_type>/<int:pk>/delete/', PostDeleteView.as_view(), name='home-post-delete'),
     
     # Comments and likes
-    path('post/<int:pk>/<str:post_type>/comment/', views.add_comment, name='add-comment'),
-    path('post/<int:pk>/<str:post_type>/like/', views.like_post, name='like-post'),
+    path('home/post/<str:post_type>/<int:pk>/comment/', views.add_comment, name='add-comment'),
+    path('home/post/<str:post_type>/<int:pk>/like/', views.like_post, name='like-post'),
     
     # Notifications
     path('notifications/', views.notifications, name='notifications'),
